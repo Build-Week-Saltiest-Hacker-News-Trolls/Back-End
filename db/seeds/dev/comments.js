@@ -16,7 +16,7 @@ exports.seed = function(knex) {
   }
   // Deletes ALL existing entries
   return knex("comment")
-    .truncate()
+    .del()
     .then(function() {
       // Inserts seed entries
       return knex("comment").insert(fakeComments);

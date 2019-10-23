@@ -4,19 +4,11 @@ exports.up = function(knex) {
     tbl
       .integer("umb_user_id")
       .unsigned()
-      .notNullable()
-      .references("id")
-      .inTable("umb_user")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
+      .notNullable();
     tbl
       .integer("comment_id")
       .unsigned()
-      .notNullable()
-      .references("id")
-      .inTable("comment")
-      .onDelete("CASCADE")
-      .onUpdate("CASCADE");
+      .notNullable();
   });
 };
 
