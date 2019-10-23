@@ -9,5 +9,10 @@ module.exports = {
       directory: "./db/seeds/dev"
     },
     useNullAsDefault: true
+  },
+  production: {
+    client: "pg",
+    connection: process.env.DATABASE_URL,
+    useNullAsDefault: true
   }
 };
