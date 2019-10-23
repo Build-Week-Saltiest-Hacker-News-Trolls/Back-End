@@ -13,7 +13,7 @@ exports.seed = function(knex) {
   }
   // Deletes ALL existing entries
   return knex("umb_user")
-    .del()
+    .truncate()
     .then(function() {
       // Inserts seed entries
       return knex("umb_user").insert(fakeUsers);
