@@ -1,7 +1,7 @@
 var express = require("express");
 const knex = require("knex");
 const config = require("../knexfile.js");
-const db = knex(config.development);
+const db = knex(config.production);
 
 var router = express.Router();
 
@@ -35,68 +35,99 @@ router.get("/users/:id", async (req, res, next) => {
   return res.status(200).json({ success: true, data: getOneUser });
 });
 
-// @desc    Get all favorites of one user
-// @route   GET /users/:id/favorites
-// @access  Public
-router.get("/users/:id/favorites", async (req, res, next) => {
-  const getAllUserFavorites = await db
+// @desc    Create new user
+// @route   POST /users
+// @access  Private
+router.post("/users", async (req, res, next) => {
+  const createNewUser = await db.insert(req.body).into("umb_user");
+  return res.status(201).json({ success: true });
+});
+
+// @desc    Update existing user
+// @route   PUT /users/:id
+// @access  Private
+router.put("/users/:id", async (req, res, next) => {
+  const updateUser = await db
+    .update(req.body)
+    .into("umb_user")
+    .where("id", "=", req.params.id);
+  return res.status(200).json({ success: true });
+});
+
+// @desc    Delete existing user
+// @route   DELETE /users/:id
+// @access  Private
+router.delete("/users/:id", async (req, res, next) => {
+  const updateUser = await db
+    .select("*")
+    .from("umb_user")
+    .where("id", "=", req.params.id)
+    .del();
+  return res.status(200).json({ success: true });
+});
+
+// @desc    Create one favorite for one user
+// @route   POST /users/:userId/comments/:commentId
+// @access  Private
+router.post("/users/:userId/comments/:commentId", async (req, res, next) => {
+  const payload = {
+    umb_user_id: req.params.userId,
+    comment_id: req.params.commentId
+  };
+  const addUserFavorite = await db.insert(payload).into("user-favorite");
+  return res.status(201).json({ success: true, data: addUserFavorite });
+});
+
+// @desc    Get all favorited comments of a user
+// @route   GET /users/:id/comments
+// @access  Public?
+router.get("/users/:id/comments", async (req, res, next) => {
+  const getAllUserFavoriteComments = await db
     .select("*")
     .from("user_favorite")
     .where("umb_user_id", "=", req.params.id);
-  return res.status(200).json({ success: true, data: getAllUserFavorites });
+  return res
+    .status(200)
+    .json({ success: true, data: getAllUserFavoriteComments });
 });
 
-// @desc    Get one favorite of one user
-// @route   GET /users/:userId/favorites/:favoriteId
-// @access  Public
-router.get("/users/:userId/favorites/:favoriteId", async (req, res, next) => {
-  const getOneUserFavorite = await db
+// @desc    Get one favorite comment of a user
+// @route   GET /users/:userId/comments/:commentId
+// @access  Public?
+router.get("/users/:userId/comments/:commentId", async (req, res, next) => {
+  const getOneUserFavoriteComment = await db
     .select("*")
     .from("user_favorite")
     .where("umb_user_id", "=", req.params.userId)
-    .andWhere("comment_id", "=", req.params.favoriteId);
-  return res.status(200).json({ success: true, data: getOneUserFavorite });
+    .andWhere("comment_id", "=", req.params.commentId);
+  return res
+    .status(200)
+    .json({ success: true, data: getOneUserFavoriteComment });
 });
 
-// @desc    Delete one favorite of one user
-// @route   DELETE /users/:userId/favorites/:favoriteId
-// @access  Public
-router.delete(
-  "/users/:userId/favorites/:favoriteId",
-  async (req, res, next) => {
-    const deleteOneUserFavorite = await db
-      .select("*")
-      .from("user_favorite")
-      .where("umb_user_id", "=", req.params.userId)
-      .andWhere("comment_id", "=", req.params.favoriteId)
-      .del();
-    return res.status(200).json({ success: true, data: [] });
-  }
-);
+// @desc    Delete favorite comment of one user
+// @route   DELETE /users/:userId/comments/:commentId
+// @access  Private
+router.delete("/users/:userId/comments/:commentId", async (req, res, next) => {
+  const deleteOneUserFavoriteComment = await db
+    .select("*")
+    .from("user_favorite")
+    .where("umb_user_id", "=", req.params.userId)
+    .andWhere("comment_id", "=", req.params.commentId)
+    .del();
+  return res.status(200).json({ success: true });
+});
 
-// @desc    Delete all favorites of one user
-// @route   Delete /users/:id/favorites
-// @access  Public
-router.delete("/users/:id/favorites", async (req, res, next) => {
+// @desc    Delete all favorite comments of one user
+// @route   Delete /users/:id/comments
+// @access  Private
+router.delete("/users/:id/comments", async (req, res, next) => {
   const deleteUserFavorites = await db
     .select("*")
     .from("user_favorite")
     .where("umb_user_id", "=", req.params.id)
     .del();
-  return res.status(200).json({ success: true, data: [] });
-});
-
-// @desc    Get one favorite of one user
-// @route   GET /users/:userId/favorites/:favoriteId
-// @access  Public
-router.post("/users/:userId/favorites/:favoriteId", async (req, res, next) => {
-  const addUserFavorite = await db
-    .insert([
-      { umb_user_id: req.params.userId },
-      { comment_id: req.params.favoriteId }
-    ])
-    .into("user-favorite");
-  return res.status(201).json({ success: true, data: addUserFavorite });
+  return res.status(200).json({ success: true });
 });
 
 /************************************************/
