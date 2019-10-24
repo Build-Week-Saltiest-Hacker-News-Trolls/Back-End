@@ -1,7 +1,7 @@
 var express = require("express");
 const knex = require("knex");
 const config = require("../knexfile.js");
-const db = knex(config.production);
+const db = knex(config.development);
 
 var router = express.Router();
 
@@ -85,8 +85,9 @@ router.post("/users/:userId/comments/:commentId", async (req, res, next) => {
 router.get("/users/:id/comments", async (req, res, next) => {
   const getAllUserFavoriteComments = await db
     .select("*")
-    .from("user_favorite")
-    .where("umb_user_id", "=", req.params.id);
+    .from("comment")
+    .join("user_favorite", "user_favorite.comment_id", "comment.id")
+    .where("user_favorite.umb_user_id", "=", req.params.id);
   return res
     .status(200)
     .json({ success: true, data: getAllUserFavoriteComments });
@@ -98,9 +99,10 @@ router.get("/users/:id/comments", async (req, res, next) => {
 router.get("/users/:userId/comments/:commentId", async (req, res, next) => {
   const getOneUserFavoriteComment = await db
     .select("*")
-    .from("user_favorite")
-    .where("umb_user_id", "=", req.params.userId)
-    .andWhere("comment_id", "=", req.params.commentId);
+    .from("comment")
+    .join("user_favorite", "user_favorite.comment_id", "comment.id")
+    .where("user_favorite.umb_user_id", "=", req.params.userId)
+    .andWhere("user_favorite.comment_id", "=", req.params.commentId);
   return res
     .status(200)
     .json({ success: true, data: getOneUserFavoriteComment });
@@ -161,8 +163,9 @@ router.get("/comments/:id", async (req, res, next) => {
 router.get("/comments/:id/favorites", async (req, res, next) => {
   const userFavorites = await db
     .select("*")
-    .from("user_favorite")
-    .where("comment_id", "=", req.params.id);
+    .from("umb_user")
+    .join("user_favorite", "user_favorite.umb_user_id", "umb_user.id")
+    .where("user_favorite.comment_id", "=", req.params.id);
   return res.status(200).json({ success: true, data: userFavorites });
 });
 
