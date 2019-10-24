@@ -19,4 +19,15 @@ app.use(express.static(path.join(__dirname, "public")));
 
 app.use("/", indexRouter);
 
+app.use(function(req, res) {
+  res.status(404).json({ success: false, message: "404 - route not found" });
+});
+
+app.use((err, req, res, next) => {
+  console.log(err);
+  res
+    .status(500)
+    .json({ message: "There was an error performing the request", error: err });
+});
+
 module.exports = app;
