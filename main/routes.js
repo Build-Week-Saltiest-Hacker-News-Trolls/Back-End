@@ -74,8 +74,9 @@ router.post("/users/:userId/comments/:commentId", async (req, res, next) => {
     umb_user_id: req.params.userId,
     comment_id: req.params.commentId
   };
-  const addUserFavorite = await db.insert(payload).into("user-favorite");
-  return res.status(201).json({ success: true, data: addUserFavorite });
+  console.log(payload);
+  const addUserFavorite = await db.insert(payload).into("user_favorite");
+  return res.status(201).json({ success: true });
 });
 
 // @desc    Get all favorited comments of a user
