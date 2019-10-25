@@ -1,4 +1,6 @@
-var express = require("express");
+const express = require("express");
+
+const bcrypt = require("bcryptjs");
 const knex = require("knex");
 const config = require("../knexfile.js");
 const db = knex(config.production);
@@ -24,7 +26,7 @@ router.get("/users", async (req, res, next) => {
   return res.status(200).json({ success: true, data: getAllUsers });
 });
 
-// @desc    Get one user
+// @desc    Get one user by id
 // @route   GET /users/:id
 // @access  Public - Necessary for authentication
 router.get("/users/:id", async (req, res, next) => {
@@ -35,11 +37,41 @@ router.get("/users/:id", async (req, res, next) => {
   return res.status(200).json({ success: true, data: getOneUser });
 });
 
+// @desc    Get one user by username and verify password
+// @route   POST /login
+// @body    includes username and password
+// @access  Public - Necessary for authentication
+router.post("/login", async (req, res, next) => {
+  let { username, password } = req.body;
+
+  const user = await db
+    .select("*")
+    .from("umb_user")
+    .where("display_name", "=", `${username}`)
+    .first()
+    .then(user => {
+      if (user && bcrypt.compareSync(password, user.password)) {
+        res.status(200).json({ message: `Welcome ${user.display_name}!` });
+      } else {
+        res.status(401).json({ message: "Invalid credentials." });
+      }
+    })
+    .catch(err => {
+      res.status(500).json({ message: "Something went wrong", error: err });
+    });
+});
+
 // @desc    Create new user
 // @route   POST /users
+// @body    includes username and password
 // @access  Private
 router.post("/users", async (req, res, next) => {
-  const createNewUser = await db.insert(req.body).into("umb_user");
+  let user = req.body;
+
+  const hash = bcrypt.hashSync(user.password, 12);
+  user.password = hash;
+  console.log(user);
+  const createNewUser = await db.insert(user).into("umb_user");
   return res.status(201).json({ success: true });
 });
 
