@@ -1,13 +1,16 @@
 const express = require("express");
 
+const User = require("../models/userModels");
+
 const router = express.Router();
 
 router.get("/", (req, res) => {
-  res.status(200).send("You have reached GET /users");
+  User.getUsers().then(users => res.status(200).json(users));
 });
 
 router.get("/:id", (req, res) => {
-  res.status(200).send("You have reached GET /users/:id");
+  const id = req.params;
+  User.getUserByID(id).then(user => res.status(200).json(user));
 });
 
 // @desc    Create new user
